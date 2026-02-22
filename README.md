@@ -2,7 +2,7 @@
 
 ## ✨ Features
 
-Automates my Dark Genesis Creature Creator Application.
+Automates my Dark Genesis Creature Creator Application using Python, Selenium and Pytest.
 
 - 🎯 **Visual Highlighting** - Green glowing borders show exactly what's being automated
 - 📊 **Beautiful HTML Reports** - Dark Genesis-themed test reports with pass/fail status
@@ -11,7 +11,9 @@ Automates my Dark Genesis Creature Creator Application.
 - 📝 **Detailed Logging** - Step-by-step console output with emojis
 - 🔄 **Comprehensive Testing** - Tests all major user workflows
 
-  Click here to see the automation in action:  https://www.loom.com/share/3371576527fc4a159d7e9d721d930b74 
+  Click here to see the automation in action:  https://www.loom.com/share/3371576527fc4a159d7e9d721d930b74
+
+  Click here to see the test report with failure:  https://ryanwdurham.github.io/Dark_Genesis_Automation/dark_genesis_test_report.html 
 
 ## 🔧 Requirements
 
