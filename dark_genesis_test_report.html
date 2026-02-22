@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Genesis - Test Report</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0f 50%, #0f0a1a 100%);
+            color: #e0e0e0;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid rgba(139, 0, 0, 0.3);
+        }
+        
+        .header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            color: #8b0000;
+            text-shadow: 0 0 20px rgba(139, 0, 0, 0.8);
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(139, 0, 0, 0.8), 0 0 40px rgba(139, 0, 0, 0.4); }
+            50% { text-shadow: 0 0 30px rgba(139, 0, 0, 1), 0 0 60px rgba(139, 0, 0, 0.6); }
+        }
+        
+        .header h2 {
+            font-family: 'Cinzel', serif;
+            color: #999;
+            font-size: 1.5rem;
+            font-weight: 400;
+        }
+        
+        .summary {
+            background: rgba(20, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(139, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .summary-item {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .summary-item h3 {
+            font-family: 'Cinzel', serif;
+            color: #8b0000;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.1rem;
+        }
+        
+        .summary-item p {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 5px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15rem;
+            margin-top: 10px;
+        }
+        
+        .status-pass {
+            background: rgba(0, 200, 0, 0.2);
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        .status-fail {
+            background: rgba(200, 0, 0, 0.2);
+            color: #ff0000;
+            border: 2px solid #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+        
+        .steps {
+            background: rgba(20, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(139, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+        
+        .steps h2 {
+            font-family: 'Cinzel', serif;
+            color: #8b0000;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.15rem;
+        }
+        
+        .step {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .step:hover {
+            border-color: rgba(139, 0, 0, 0.6);
+            box-shadow: 0 5px 20px rgba(139, 0, 0, 0.3);
+        }
+        
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .step-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+        
+        .step-status {
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+        }
+        
+        .step-pass {
+            background: rgba(0, 200, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+        
+        .step-fail {
+            background: rgba(200, 0, 0, 0.2);
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+        
+        .step-details {
+            color: #999;
+            font-size: 1rem;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+        
+        .step-meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(139, 0, 0, 0.2);
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .pass-count { color: #00ff00; }
+        .fail-count { color: #ff0000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>DARK GENESIS</h1>
+            <h2>Automation Test Report</h2>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h3>Test Status</h3>
+                    <p><span class="status-badge status-fail">FAIL</span></p>
+                </div>
+                <div class="summary-item">
+                    <h3>Total Steps</h3>
+                    <p>6</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Passed</h3>
+                    <p class="pass-count">5</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Failed</h3>
+                    <p class="fail-count">1</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Duration</h3>
+                    <p>54.7s</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Start Time</h3>
+                    <p>11:12:44</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="steps">
+            <h2>Test Steps</h2>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-name">1. Click Start Creating</div>
+                    <div class="step-status step-pass">PASS</div>
+                </div>
+                <div class="step-details">Successfully navigated to creator page</div>
+                <div class="step-meta">
+                    <span>⏱️ 11:12:49</span>
+                    <span>⌛ 4.4s</span>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-name">2. Roll All Traits</div>
+                    <div class="step-status step-pass">PASS</div>
+                </div>
+                <div class="step-details">Successfully rolled all 8 traits</div>
+                <div class="step-meta">
+                    <span>⏱️ 11:13:07</span>
+                    <span>⌛ 17.3s</span>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-name">3. Generate Creature Name</div>
+                    <div class="step-status step-pass">PASS</div>
+                </div>
+                <div class="step-details">Generated names: Avatar of Suffering, The Bleeding Crown, The Thirsting Shadow</div>
+                <div class="step-meta">
+                    <span>⏱️ 11:13:13</span>
+                    <span>⌛ 6.8s</span>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-name">4. Create Creature</div>
+                    <div class="step-status step-pass">PASS</div>
+                </div>
+                <div class="step-details">Creature creation initiated successfully</div>
+                <div class="step-meta">
+                    <span>⏱️ 11:13:17</span>
+                    <span>⌛ 3.6s</span>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-name">5. Wait for AI Image Generation</div>
+                    <div class="step-status step-pass">PASS</div>
+                </div>
+                <div class="step-details">Image generated and displayed for viewing (generation took 0s)</div>
+                <div class="step-meta">
+                    <span>⏱️ 11:13:27</span>
+                    <span>⌛ 9.6s</span>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-name">6. Download Creature Card</div>
+                    <div class="step-status step-fail">FAIL</div>
+                </div>
+                <div class="step-details">Alert Text: Card saved: DarkGenesis_The_Thirsting_Shadow.html
+
+The image is embedded in the file!
+Message: unexpected alert open: {Alert text : Card saved: DarkGenesis_The_Thirsting_Shadow.html
+
+The image is embedded in the file!}
+  (Session info: chrome=144.0.7559.110)
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0x7ff6f69fa535
+	0x7ff6f69fa590
+	0x7ff6f67a10bd
+	0x7ff6f684a97b
+	0x7ff6f67ecc9c
+	0x7ff6f67edbe3
+	0x7ff6f6cd7b60
+	0x7ff6f6cd1f5d
+	0x7ff6f6cf311a
+	0x7ff6f6a160a5
+	0x7ff6f6a1e73c
+	0x7ff6f6a03844
+	0x7ff6f6a039f6
+	0x7ff6f69e9a07
+	0x7ffc90afe8d7
+	0x7ffc91aac53c
+</div>
+                <div class="step-meta">
+                    <span>⏱️ 11:13:33</span>
+                    
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="footer">
+            <p>Generated on February 03, 2026 at 11:13:38</p>
+            <p>Dark Genesis Automation Framework v1.0</p>
+        </div>
+    </div>
+</body>
+</html>
