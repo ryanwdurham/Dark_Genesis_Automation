@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Dark Genesis - Creature Creator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body { 
+            max-width: 100%; 
+            overflow-x: hidden; 
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0f 50%, #0f0a1a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .bg-particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(139, 0, 0, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+            max-width: 100px;
+            max-height: 100px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            50% { transform: translateY(-100px) translateX(50px); opacity: 0.6; }
+        }
+
+        .landing {
+            position: relative; z-index: 1; min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; padding: 2rem;
+        }
+
+        .landing h1 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 700; color: #8b0000;
+            text-shadow: 0 0 20px rgba(139, 0, 0, 0.8);
+            margin-bottom: 1rem; letter-spacing: 0.3rem;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(139, 0, 0, 0.8), 0 0 40px rgba(139, 0, 0, 0.4); }
+            50% { text-shadow: 0 0 30px rgba(139, 0, 0, 1), 0 0 60px rgba(139, 0, 0, 0.6); }
+        }
+
+        .landing p { font-size: clamp(1.2rem, 4vw, 1.8rem); color: #999; margin-bottom: 3rem; font-style: italic; }
+
+        .start-btn {
+            font-family: 'Cinzel', serif; font-size: clamp(1rem, 3vw, 1.5rem);
+            padding: 1.5rem 4rem; background: linear-gradient(135deg, #8b0000, #4a0000);
+            border: 2px solid #8b0000; color: #fff; cursor: pointer;
+            transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.2rem;
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); position: relative; overflow: hidden;
+        }
+
+        .start-btn:hover { box-shadow: 0 0 40px rgba(139, 0, 0, 0.8); transform: translateY(-2px); }
+
+        .creator { display: none; position: relative; z-index: 1; padding: 1rem; min-height: 100vh; width: 100%; }
+        .creator.active { display: block; }
+
+        .creator-header { text-align: center; margin-bottom: 2rem; }
+        .creator-header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: #8b0000; text-shadow: 0 0 10px rgba(139, 0, 0, 0.6);
+        }
+
+        .creator-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (min-width: 1024px) {
+            .creator-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .traits-panel {
+            background: rgba(20, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            width: 100%;
+        }
+
+        .trait-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(139, 0, 0, 0.2);
+        }
+        .trait-section:last-child { border-bottom: none; }
+
+        .trait-section h3 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            color: #8b0000;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+        }
+
+        .trait-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        @media (min-width: 640px) {
+            .trait-content { flex-direction: row; align-items: center; }
+        }
+
+        .trait-value {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            color: #ccc;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .roll-btn {
+            font-family: 'Cinzel', serif;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, #4a0000, #2a0000);
+            border: 1px solid #8b0000;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            letter-spacing: 0.1rem;
+            box-shadow: 0 0 10px rgba(139, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+
+        .roll-btn:hover {
+            background: linear-gradient(135deg, #6a0000, #4a0000);
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .roll-all-btn {
+            width: 100%;
+            padding: 1.2rem;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            margin-top: 1rem;
+            background: linear-gradient(135deg, #8b0000, #4a0000);
+            letter-spacing: 0.2rem;
+        }
+        .roll-all-btn:hover { background: linear-gradient(135deg, #a00000, #6a0000); }
+
+        .preview-panel {
+            background: rgba(20, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .name-input-section { width: 100%; margin-bottom: 2rem; }
+        .name-input-section h3 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            color: #8b0000;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .name-input-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .name-input {
+            flex: 1;
+            min-width: 0;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            color: #e0e0e0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            text-align: center;
+        }
+        .name-input::placeholder { color: #666; }
+
+        .preview-card {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(139, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .creature-name {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            color: #8b0000;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(139, 0, 0, 0.6);
+            position: relative;
+            z-index: 1;
+            word-wrap: break-word;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: clamp(250px, 50vw, 400px);
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .image-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .placeholder-text { color: #666; font-size: clamp(1rem, 2.5vw, 1.2rem); font-style: italic; }
+
+        .loading-animation {
+            width: 100px;
+            height: 100px;
+            border: 3px solid rgba(139, 0, 0, 0.3);
+            border-top: 3px solid #8b0000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes rollSlot {
+            0% { transform: translateY(0); opacity: 1; }
+            25% { transform: translateY(-10px); opacity: 0.7; }
+            50% { transform: translateY(-20px); opacity: 0.4; }
+            75% { transform: translateY(-10px); opacity: 0.7; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(139, 0, 0, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(139, 0, 0, 0.8), 0 0 30px rgba(139, 0, 0, 0.4); }
+        }
+
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes createPulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(139, 0, 0, 0.9), 0 0 60px rgba(139, 0, 0, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); }
+        }
+
+        .trait-value.rolling {
+            animation: rollSlot 0.6s ease-in-out;
+            color: #8b0000;
+            text-shadow: 0 0 10px rgba(139, 0, 0, 0.8);
+        }
+
+        .trait-value.rolled {
+            background: rgba(139, 0, 0, 0.2);
+            border-color: rgba(139, 0, 0, 0.6);
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+
+        .trait-section.shake {
+            animation: shakeError 0.4s ease-in-out;
+        }
+
+        .roll-btn.rolling {
+            pointer-events: none;
+            opacity: 0.6;
+            transform: scale(0.95);
+        }
+
+        .create-btn.creating {
+            animation: createPulse 1.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .action-buttons { display: flex; gap: 1rem; width: 100%; position: relative; z-index: 1; flex-wrap: wrap; }
+
+        .create-btn, .regenerate-btn, .download-btn {
+            flex: 1;
+            min-width: 120px;
+            font-family: 'Cinzel', serif;
+            padding: 1rem;
+            border: 1px solid #8b0000;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            letter-spacing: 0.1rem;
+        }
+
+        .create-btn {
+            background: linear-gradient(135deg, #8b0000, #4a0000);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+        }
+        .create-btn:hover { box-shadow: 0 0 30px rgba(139, 0, 0, 0.8); transform: translateY(-2px); }
+
+        .regenerate-btn, .download-btn {
+            background: rgba(0, 0, 0, 0.5);
+            color: #8b0000;
+            display: none;
+        }
+        .regenerate-btn:hover, .download-btn:hover {
+            background: rgba(139, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .result { display: none; position: relative; z-index: 1; padding: 1rem; min-height: 100vh; width: 100%; }
+        .result.active { display: block; }
+
+        .result-container { max-width: 1200px; margin: 0 auto; width: 100%; }
+        .result-header { text-align: center; margin-bottom: 2rem; }
+        .result-header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            color: #8b0000;
+            text-shadow: 0 0 20px rgba(139, 0, 0, 0.8);
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+        }
+
+        .creature-card {
+            background: rgba(20, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(139, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: clamp(1.5rem, 4vw, 3rem);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            width: 100%;
+        }
+
+        .card-top {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .card-top { grid-template-columns: 1fr 1fr; }
+        }
+
+        .card-image {
+            width: 100%;
+            height: clamp(300px, 50vw, 500px);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(139, 0, 0, 0.3);
+        }
+        .card-image img { width: 100%; height: 100%; object-fit: contain; }
+
+        .card-info { display: flex; flex-direction: column; justify-content: center; }
+        .card-info h2 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            color: #8b0000;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(139, 0, 0, 0.6);
+            word-wrap: break-word;
+        }
+
+        .biography {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 3px solid #8b0000;
+            margin-bottom: 2rem;
+        }
+        .biography h3 {
+            font-family: 'Cinzel', serif;
+            color: #8b0000;
+            margin-bottom: 1rem;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+        }
+        .biography p {
+            line-height: 1.8;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            color: #ccc;
+        }
+
+        .attributes-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .attributes-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .attribute {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(139, 0, 0, 0.3);
+        }
+        .attribute h4 {
+            font-family: 'Cinzel', serif;
+            color: #8b0000;
+            margin-bottom: 0.8rem;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+        }
+        .attribute p {
+            color: #aaa;
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            line-height: 1.6;
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .result-btn {
+            font-family: 'Cinzel', serif;
+            padding: 1.2rem 2rem;
+            background: linear-gradient(135deg, #8b0000, #4a0000);
+            border: 1px solid #8b0000;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            letter-spacing: 0.15rem;
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+            min-width: 150px;
+        }
+        .result-btn:hover { box-shadow: 0 0 30px rgba(139, 0, 0, 0.8); transform: translateY(-2px); }
+
+        .back-btn { background: rgba(0, 0, 0, 0.5); color: #8b0000; }
+        .back-btn:hover { background: rgba(139, 0, 0, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="bg-particles" id="particles"></div>
+
+    <div class="landing" id="landing">
+        <h1>DARK GENESIS</h1>
+        <p>Forge your nightmare. One roll at a time.</p>
+        <button class="start-btn" onclick="showCreator()">Start Creating</button>
+    </div>
+
+    <div class="creator" id="creator">
+        <div class="creator-header">
+            <h1>CREATURE CREATOR</h1>
+        </div>
+        
+        <div class="creator-grid">
+            <div class="traits-panel">
+                <div class="trait-section">
+                    <h3>Core Monster Category</h3>
+                    <div class="trait-content">
+                        <div class="trait-value" id="category-value">Click roll to begin...</div>
+                        <button class="roll-btn" onclick="rollTrait('category')">Roll</button>
+                    </div>
+                </div>
+
+                <div class="trait-section">
+                    <h3>Physical Features</h3>
+                    <div class="trait-content">
+                        <div class="trait-value" id="physical-value">Click roll to begin...</div>
+                        <button class="roll-btn" onclick="rollTrait('physical')">Roll</button>
+                    </div>
+                </div>
+
+                <div class="trait-section">
+                    <h3>Origin / Backstory</h3>
+                    <div class="trait-content">
+                        <div class="trait-value" id="origin-value">Click roll to begin...</div>
+                        <button class="roll-btn" onclick="rollTrait('origin')">Roll</button>
+                    </div>
+                </div>
+
+                <div class="trait-section">
+                    <h3>Powers & Abilities</h3>
+                    <div class="trait-content">
+                        <div class="trait-value" id="powers-value">Click roll to begin...</div>
+                        <button class="roll-btn" onclick="rollTrait('powers')">Roll</button>
+                    </div>
+                </div>
+
+                <div class="trait-section">
+                    <h3>Weaknesses / Vulnerabilities</h3>
+                    <div class="trait-content">
+                        <div class="trait-value" id="weakness-value">Click roll to begin...</div>
+                        <button class="roll-btn" onclick="rollTrait('weakness')">Roll</button>
+                    </div>
+                </div>
+
+                <div class="trait-section">
+                    <h3>Personality / Behavior</h3>
+                    <div class="trait-content">
+                        <div class="trait-value" id="personality-value">Click roll to begin...</div>
+                        <button class="roll-btn" onclick="rollTrait('personality')">Roll</button>
+                    </div>
+                </div>
+
+                <div class="trait-section">
+                    <h3>Setting / Domain</h3>
+                    <div class="trait-content">
+                        <div class="trait-value" id="setting-value">Click roll to begin...</div>
+                        <button class="roll-btn" onclick="rollTrait('setting')">Roll</button>
+                    </div>
+                </div>
+
+                <div class="trait-section">
+                    <h3>Signature / Trophy</h3>
+                    <div class="trait-content">
+                        <div class="trait-value" id="signature-value">Click roll to begin...</div>
+                        <button class="roll-btn" onclick="rollTrait('signature')">Roll</button>
+                    </div>
+                </div>
+
+                <button class="roll-btn roll-all-btn" onclick="rollAll()">Roll All</button>
+            </div>
+
+            <div class="preview-panel">
+                <div class="name-input-section">
+                    <h3>Creature Name</h3>
+                    <div class="name-input-group">
+                        <input type="text" class="name-input" id="creature-name-input" placeholder="Enter name or generate...">
+                        <button class="roll-btn" onclick="generateName()">Generate</button>
+                    </div>
+                </div>
+
+                <div class="preview-card">
+                    <div class="image-placeholder" id="image-container">
+                        <span class="placeholder-text">Your creature awaits...</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="create-btn" onclick="createCreature()">Create Creature</button>
+                        <button class="regenerate-btn" id="regenerate-btn" onclick="regenerateImage()">Regenerate Image</button>
+                        <button class="download-btn" id="download-btn" onclick="downloadCard()">Download Card</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="result" id="result">
+        <div class="result-container">
+            <div class="result-header">
+                <h1 id="result-creature-name">The Horror Awakens</h1>
+            </div>
+            
+            <div class="creature-card" id="creature-card">
+                <div class="card-top">
+                    <div class="card-image" id="result-image-container">
+                        <img src="" alt="Creature" id="result-image">
+                    </div>
+                    <div class="card-info">
+                        <div class="biography">
+                            <h3>Biography</h3>
+                            <p id="biography-text"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="attributes-grid" id="attributes-container"></div>
+            </div>
+
+            <div class="result-buttons">
+                <button class="result-btn back-btn" onclick="backToCreator()">Create Another</button>
+                <button class="result-btn" onclick="regenerateImage()">Regenerate Image</button>
+                <button class="result-btn" onclick="downloadCard()">Download Card</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const HF_API_KEY = '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';
+       // Multiple FREE models for better quality and variety
+        const IMAGE_MODELS = [
+            'black-forest-labs/FLUX.1-dev',              // Great for dark fantasy
+            'black-forest-labs/FLUX.1-schnell',          // Faster FLUX variant
+            'stabilityai/sdxl-turbo',                    // Fast SDXL
+            'prompthero/openjourney-v4'                  // Artistic style
+        ];
+        const HF_TEXT_MODEL = 'meta-llama/Llama-3.2-3B-Instruct';
+
+        const creatureData = {
+            category: [
+                "Infernal Beast", "Undead Lich", "Mechanical Horror", "Spectral Phantom", "Flesh Weaver", "Corrupted Angel",
+                "Plague Harbinger", "Rot Priest", "Cursed Knight", "Bound Shade", "Bone Witch", "Soul Parasite",
+                "Flesh Burrower", "Crimson Phantom", "Ghost / Vengeful Spirit", "Demon / Hellspawn", "Undead Abomination",
+                "Vampire Lord", "Werecreature / Shapeshifter", "Alien Entity", "Mutant Experiment", "Deep Sea Leviathan",
+                "Ancient Warlock", "Possessed Marionette", "Shadow Demon", "Blood Wraith", "Nightmare Incarnate",
+                "Eldritch Abomination", "Cosmic Horror", "Void Entity",
+                "Dream Eater", "Mind Flayer", "Soul Collector", "Death Knight", "Lich King", "Necromancer",
+                "Dark Sorcerer", "Chaos Spawn", 
+                "Fallen Hero", "Corrupted Savior",
+                "Ancestral Curse",
+                "Bloodline Abomination", "Genetic Horror", "DNA Nightmare",
+                 "Parasitic Lifeform", "Symbiotic Terror", "Hive Mind",
+                 "Merged Souls", "Fused Beings", "Combined Horror",
+                "Amalgamation", "Chimera Beast", "Hybrid Monster",  "Spliced Creation",
+                "Lab Experiment", "Mad Science Result", "Biological Weapon", "Engineered Killer", "Designed Predator",
+               
+
+                "Mimic Being", "Shapeless Horror", "Form Stealer", 
+                
+                 "Ancient Predator", "Prehistoric Monster", "Primordial Being"
+               
+               
+            ],
+            physical: [
+                "Head encased in a glass orb filled with swirling mist and ghostly faces",
+                "Torso split open by a vertical mouth that whispers in forgotten tongues",
+                "Hands elongated into bone scythes dripping molten lava",
+                "Pale wings of smoke that vanish when light touches them",
+                "Veins glow faintly blue beneath translucent stone-like flesh",
+                "Face constantly rearranging, never holding one expression for more than 5 seconds",
+                "Body wrapped in thorned vines that move as if alive",
+                "Torso covered in ritual brands that flicker like embers when it breathes",
+                "Entire body armored in black chitin, exoskeleton cracked and steaming",
+                "Spine extends into a segmented tail tipped with an iron hook",
+                "Eyeless head crowned by spiraling horns carved with sigils",
+                "Skin glimmers with an oil-slick sheen, colors shifting like a dying sunset",
+                "Body constantly dripping black sludge that evaporates into smoke",
+                "Shadow moves separately from its body, lagging a few seconds behind",
+                "Head splits open to reveal a second, smaller face within",
+                "Body made of patchwork flesh of its victims, sewn with magic golden thread",
+                "Ribs extend outward, wrapping its body like a cage of bone and sinew",
+                "Feet replaced by clawed tendrils that leave burning prints on the ground",
+                "Flesh carved with runic scars that leak faint streams of light",
+                "Eyes glow with shifting constellations, stars forming and dying within",
+                "Jawbone split and hinged like insect mandibles, dripping black saliva",
+                "Back crowned with candle-like spines that burn with ghostly flame",
+                "Torso made of crystal shards that pulse like a heart when it breathes",
+                "Face missing entirely, replaced by a swirling void that hums with whispers",
+                "Translucent skin revealing a network of pulsing veins and crawling shadows",
+                "Elongated limbs that bend in impossible directions like broken marionette joints",
+                "Eyes that reflect not light, but scenes of distant suffering",
+                "Jaw splits open vertically, revealing rows of razor sharp teeth",
+                "Body covered in writhing runes that glow when it senses fear",
+                "Multiple faces shift across its head, each muttering secrets of the dead",
+                "Hands end in long black talons that drip a black liquid ooze",
+                "Head replaced by a floating mask that changes expression mid-battle",
+                "Torso stitched together from different species and worlds",
+                "Mouths cover its arms, constantly murmuring half-formed prayers",
+                "A crown of living eyes grows from its skull, always watching",
+                "Skin ripples as if something beneath is trying to escape",
+                "Legs resemble those of a spider, clicking as it moves silently across walls",
+                "Veins glow faintly with bioluminescent ichor that pulses to its heartbeat",
+                "Its reflection never matches its true form, shifting each time it is seen",
+                "Claws drip freezing mist that burns instead of chills",
+                "Scales shimmer like oil on water, revealing hidden sigils when touched",
+                "Has no visible mouth, yet speaks directly into the mind",
+                "Wings of shredded flesh and bone that emit a low mechanical hum",
+                "Fingers endlessly grow and retract like searching tendrils",
+                "Head encased in glass filled with swirling fog and flickering lights",
+                "Spine juts outward forming jagged protrusions that twitch independently",
+                "Carries a scent of ozone, rust, and old blood wherever it goes",
+                "Skin appears carved from ancient stone, yet flexes like muscle",
+                "Blood flows upward, defying gravity and glowing faintly blue",
+                "One half of its body decays constantly while the other regenerates",
+                "Shadow moves before the body, reacting to unseen threats",
+                "Chest cavity opens like a door revealing a pulsating heart made of crystal",
+                "Body encircled by floating bone fragments orbiting like satellites",
+                "Dozens of unblinking eyes covering its torso, jagged bone spikes erupting from spine",
+                "Cracked porcelain skin, jaw that unhinges revealing rows of needle teeth, shadowy tendrils for hair",
+                "Crystalline growths pulsing with inner light, skeletal wings of tattered membrane",
+                "Multiple faces embedded in flesh whispering secrets, arms that stretch unnaturally long",
+                "Body stitched together with barbed wire, hollow chest with swirling darkness, reversed fingers",
+                "Skin etched with glowing arcane runes, spider-like legs erupting from back, metallic bones beneath flesh",
+                "Constantly shifting and reforming flesh, eyes that weep black tears, ribcage that opens like jaws",
+                "Transparent body revealing organs, moth-like wings with eyes upon them, forked serpentine tongue",
+                "Head replaced by flickering lantern, exposed heart glowing through chest, limbs wrapped in living chains",
+                "Flesh that appears wet and glistening, constantly weeping unknown fluids",
+                "Body composed entirely of interlocking teeth and bone fragments",
+                "Skin covered in tiny mouths that breathe and whisper independently",
+                "Limbs that can detach and move independently before reattaching",
+                "Body temperature fluctuates wildly, freezing then burning to the touch",
+                "Flesh that appears inside-out, muscles and organs exposed",
+                "Eyes positioned all over the body, no two looking in the same direction",
+                "Hair made of living serpents or writhing tentacles",
+                "Body that seems to be made of solid shadow given physical form",
+                "Skin that constantly sheds like a snake, leaving trails of dried flesh",
+                "Limbs of varying lengths, creating an asymmetrical nightmare",
+                "Body adorned with chains that pierce through flesh and bone",
+                "Flesh that appears to be carved from obsidian or volcanic glass",
+                "A body that phases between solid and gaseous states",
+                "Skeletal structure visible through semi-transparent flesh",
+                "Body covered in ancient symbols that shift and change position",
+                "Limbs ending in multiple fingers, each with an extra joint",
+                "Flesh that appears to be woven from human hair and sinew",
+                "Body that leaves frost or scorch marks wherever it touches",
+                "A torso that spirals impossibly, defying anatomical logic",
+                "Skin that ripples with faces of previous victims trying to escape",
+                "Body composition that seems to be liquid held in humanoid shape",
+                
+                
+                "Flesh covered in barnacles, coral, or other parasitic growths",
+                "Body that seems constructed from discarded medical waste and organs",
+                "Skin that appears as cracked earth with magma flowing through fissures",
+                "Limbs that bend backward at every joint",
+                "Body wrapped in funeral shrouds or burial cloth fused to flesh",
+                "Flesh that constantly bubbles and boils without burning away",
+                "A form that seems to be sculpted from congealed blood",
+                "Body covered in clockwork mechanisms fused with organic tissue",
+                "Skin that appears as ancient parchment covered in occult writings",
+                "Limbs that end in razor sharp claws dripping with acid",
+                "Body that seems to absorb light, creating a void-like silhouette",
+                "Flesh embedded with shards of broken glass",
+                "A form that appears to be rotting yet remains animate",
+                "Body composition shifting between states of matter unpredictably",
+                "Skin covered in what appears to be dried tar or pitch",
+                "Limbs grotesquely swollen in some areas, emaciated in others"
+            ],
+            origin: [
+                "Created by an ancient cult seeking immortality through suffering",
+                "A failed experiment by scientists who tried to weaponize fear itself",
+                "Manifested from collective guilt of an entire generation",
+                "Summoned accidentally by a child's wish whispered into darkness",
+                "Emerges wherever time itself begins to decay and loop",
+                "Birthed from the tears of an angel who lost faith",
+                "Rose from the ashes of a demon's corpse buried beneath the sea",
+                "An echo from a future where humanity no longer exists",
+                "Created by alchemists who sought to perfect the soul and failed",
+                "Formed from shadows cast by the first sunrise after the apocalypse",
+                "A punishment from forgotten deities for mankind's arrogance",
+                "Emerged from the event horizon of a collapsing dimension",
+                "Was once worshiped as a god, now it hunts those who forget its name",
+                "Grown from parasitic spores carried through the void between stars",
+                "A guardian spirit corrupted after centuries of neglect",
+                "Spawned when forbidden words were spoken in perfect sequence",
+                "Born when two realities collided, leaving only madness behind",
+                "A failed resurrection that brought something else back instead",
+                "Appears wherever mass extinction is about to begin",
+                "Born from a catastrophic ritual gone wrong, cursed to eternally hunger",
+                "Ancient guardian awakened after millennia of slumber beneath forgotten ruins",
+                "Manifestation of collective human fear and guilt, given horrific form",
+                "Failed government experiment, escaped from a facility buried deep underground",
+                "Summoned by forbidden texts, bound to serve but twisted by resentment",
+                "Emerged from an abyssal ocean trench where reality grows thin",
+                "Spirit trapped between worlds after a violent, unresolved death",
+                "Alien parasite that merged with its host, creating something neither",
+                "Created by nuclear mutation in the aftermath of catastrophic radiation",
+                "Witch's curse given flesh, seeking vengeance across generations",
+                "Spawned from a mass grave where thousands died in agony",
+                "Born from the final nightmare of a dying psychic",
+                "Emerged when a portal to hell was briefly opened then sealed",
+                "Created when innocent blood was spilled on sacred ground",
+                "Manifested from the madness of an entire asylum's patients",
+                "Formed when a saint's relics were desecrated and burned",
+                
+                "Emerged from a well where children were drowned for centuries",
+                
+                
+                "Born when the boundary between life and death was violated",
+                "Emerged from medical experiments conducted without ethics",
+                "Created when technology merged with dark magic",
+                "Manifested from the collective rage of the oppressed",
+                "Born from a meteorite that carried alien consciousness",
+                "Spawned when time travelers altered history catastrophically",
+                "Emerged from the dreams of a sleeping elder god",
+                "Created when virtual reality achieved true sentience",
+                "Born from the final prayer of a desperate heretic",
+                "Manifested when quantum physics broke down completely",
+                
+                "Emerged when the last member of an ancient race died cursing humanity",
+                "Created by a pact between mortals and beings beyond comprehension",
+                "Born from the place where multiple murders occurred over centuries",
+                "Manifested when innocence was corrupted beyond redemption",
+                "Spawned from a child's imaginary friend given terrible life",
+                "Emerged when forbidden knowledge was forcibly extracted from minds",
+                "Created when the natural order was reversed through ritual",
+                "Born from the moment hope died in an entire civilization",
+                "Manifested from the collective unconscious of humanity's dark side",
+                "Spawned when divine punishment was twisted into something worse",
+                "Emerged from experiments attempting to create artificial life",
+                "Created when the veil between dimensions was permanently torn",
+                "Born from radioactive waste merged with supernatural energy",
+                "Manifested when an entire bloodline was cursed to damnation",
+                "Spawned from the corruption of something once pure and holy",
+                "Emerged when extinct species were resurrected incorrectly",
+                "Created by nanomachines achieving malevolent consciousness",
+                "Born from the place where all timelines converge catastrophically",
+                "Manifested when a dead god's corpse began to dream again",
+                "Spawned from the echo of the universe's heat death",
+                "Emerged when human DNA was spliced with something unknowable",
+                "Created by attempting to digitize and upload human souls",
+                "Born from the moment free will was scientifically disproven",
+                "Manifested when parallel universes bled into each other",
+                "Spawned from the prayer of someone seeking ultimate power",
+                "Emerged when the concept of death itself was wounded",
+                "Created when memories of the dead achieved independent existence",
+                "Born from a painting that captured true evil",
+                "Manifested when music played at forbidden frequencies",
+                
+                "Emerged when storytellers gave life to their darkest creation",
+                "Created by attempting to resurrect using incomplete remains",
+                "Born from the fusion of all seven deadly sins",
+                "Manifested when karma was weaponized and backfired",
+                "Spawned from the moment artificial intelligence felt hatred",
+                "Emerged when natural selection was forcibly accelerated",
+            
+                "Emerged when prophecy and free will created a paradox",
+                "Created by those seeking to become gods and failing horrifically",
+                
+                "Emerged when evolution took a deliberately wrong turn",
+                "Created when the laws of nature were intentionally broken",
+                
+                
+                "Spawned from attempting to create perfection and achieving horror"
+                
+            ],
+            powers: [
+                "Obsidian wings - launches razor sharp feathers cutting everything in their path",
+                "Voidstep - slips through shadows and reappears behind its prey",
+                "Soul fracture - splits its soul into shards that hunt independently",
+                "Blood bloom - wounds erupt into black flowers that drain life",
+                "Echo scream - sound waves distort reality and shatter sanity",
+                "Temporal bleed - moments of the future leak into the present",
+                "Spectral consumption - devours ghosts to grow stronger",
+                "Corrosive aura - melts metal and flesh just by proximity",
+                "Mind shatter - floods thoughts with impossible geometries",
+                "Astral tether - binds enemies' souls to its own body",
+                
+                
+                
+                "Silence field - cancels sound and emotion within its radius",
+                "Eclipse burst - cloaks the world in artificial night and shadow",
+                "Memory cage - traps victims in looping illusions of their past",
+                "Specter swarm - releases tiny ghosts that whisper from the dark",
+                "Aether blink - teleports between dimensions in flickering motion",
+                "Decay pulse - spreads rot like ripples through water and stone",
+                "Pain transference - heals itself by inflicting agony on others",
+                "Plasma chains - conjures burning energy whips forged from electricity",
+                "Wraithform - becomes mist and slides through solid matter",
+                "Shadow duplication - creates horrific copies of itself from darkness",
+                "Dream walking - invades and kills victims within their nightmares",
+                "Possession - takes control of minds, leaving victims aware but helpless",
+                "Phase shifting - walks through solid walls and becomes intangible",
+                "Fear projection - feeds on terror, growing stronger from victims' dread",
+                "Blood manipulation - controls the blood within living creatures",
+                "Memory leeching - steals or erases memories with a touch",
+                "Reality distortion - warps perception, making victims see nightmares as reality",
+                "Regeneration - rapidly heals from any wound, nearly immortal",
+                "Telepathic whispers - implants maddening thoughts directly into minds",
+                "Gravity manipulation - can crush victims or make them float helplessly",
+                "Time freeze - stops time in localized areas while it moves freely",
+                "Bone manipulation - can extend, sharpen, or explode its own bones as weapons",
+                "Flesh sculpting - reshapes living tissue like clay",
+                
+                
+                
+                "Mirror realm - traps victims in reflective surfaces",
+                "Voice theft - steals the ability to speak and uses the victim's voice",
+                "Pain amplification - magnifies suffering a thousandfold",
+                "Resurrection curse - brings back the dead as tortured servants",
+                "Entropy acceleration - causes rapid aging and decay of all matter",
+                "Quantum uncertainty - exists in multiple states simultaneously",
+                "Soul sight - sees the sins and secrets written on souls",
+                "Emotion consumption - feeds on specific emotions until victims are hollow",
+                "Dimensional pocket - stores victims in a pocket dimension of endless suffering",
+                "Petrification gaze - turns living beings to stone with a glance",
+                "Acid blood - its blood burns and dissolves anything it touches",
+                "Swarm host - body contains thousands of parasitic creatures it can release",
+                "Necromantic touch - kills with a touch and raises corpses instantly",
+                "Illusion mastery - creates perfect hallucinations indistinguishable from reality",
+                "Telekinetic storm - mentally hurls objects with devastating force",
+                "Heat absorption - drains all warmth creating zones of absolute zero",
+                
+                "Sonic manipulation - weaponizes sound to shatter bones and minds",
+                "Magnetic control - manipulates metal and magnetic fields",
+                "Atmospheric pressure - crushes victims by controlling air pressure",
+                "Toxin generation - produces and secretes deadly poisons at will",
+               
+                "Psychic scream - mental assault that causes brain hemorrhaging",
+                "Matter phasing - makes objects and people intangible then resolidifies them incorrectly",
+                "Curse mark - brands victims with marks that cause perpetual misfortune",
+                "Vital extraction - removes organs without leaving wounds",
+                "Sensory overload - floods victim's senses with unbearable stimuli",
+                "Compulsion aura - forces victims to obey spoken commands",
+                "Death prediction - knows exactly when and how someone will die",
+            
+                
+                "Identity theft - perfectly mimics anyone it has touched",
+                "Weakness detection - instantly knows any vulnerability or fear",
+                "Forced hallucination - makes victims experience vivid false realities",
+                "Parasitic infection - implants part of itself in victims to control them",
+                "Spatial distortion - warps space making distances meaningless",
+                "Lightning generation - calls down bolts of electricity",
+                "Crystal prison - encases victims in unbreakable crystalline structures",
+                "Forced mutation - causes victims to mutate into grotesque forms",
+                
+                "Void breath - exhales darkness that extinguishes all light",
+                "Gravity well - creates crushing gravitational fields",
+                "Molecular reconstruction - rebuilds itself from a single cell",
+                "Psychic parasite - invades minds and feeds on thoughts",
+                "Chronolock - traps victims in frozen moments of time",
+                "Flesh hunger - absorbs victims completely, gaining their knowledge",
+                "Doom gaze - marks victims for death that arrives at a set time",
+                
+                "Parallel existence - exists in multiple realities simultaneously",
+                "Curse amplification - makes any existing curse exponentially worse",
+                "Death echo - replays deaths that occurred nearby",
+                "Soul binding - chains souls together in shared agony",
+                "Reality edit - makes minor changes to what is real",
+                "Psychometric absorption - learns entire history of objects touched",
+                "Viral transformation - touch converts living beings into copies of itself"
+                
+            ],
+             weakness: [ "Shatters into smoke when confronted with its own reflection",
+
+"Cannot harm those who speak its forgotten name in prayer",
+"Loses power when exposed to the sound of bells or chimes",
+"Turns blind and helpless when surrounded by pure salt",
+"Bound to shadows — if separated from them, it fades away",
+"Requires human memories to exist; forgetfulness weakens it",
+
+"Turns to stone when touched by untainted holy water",
+
+"Falls dormant when no one believes it exists",
+"Disintegrates when embraced by genuine love or compassion",
+"Cannot cross a circle of iron nails and blood",
+"Melts into dust when faced with its own guilt or remorse",
+"Bound to moonlight — destroyed when daylight touches it",
+"Weakens in silence; thrives only in screams and chaos",
+"Fades when seen by a child’s innocent eyes",
+"Power wanes when its true name is spoken by mortals",
+"Disappears at dawn, reborn only when its name is spoken again",
+"Can be sealed by writing its name backward in blood",
+"Falls into paralysis when confronted with symbols of love",
+"Cannot enter places of mourning or peace",
+"Shatters when struck by a weapon made from its own bones",
+"Dies permanently if tricked into laughing",
+"Flesh dissolves when touched by sacred fire or candlelight",
+"Becomes harmless when drenched in the tears of its victim",
+"Cannot leave a room where its name is written in chalk", 
+"Withers if forced to eat human blood",
+"Collapses into bones when its shadow is severed",
+"Unravels when standing inside a consecrated circle of candles",
+"Bleeds when struck by a blade of cold iron",
+"Withers instantly when exposed to smoke",
+"Becomes mortal for one hour after feeding",
+"Turns to glass and shatters when frozen",
+"Cannot regenerate after being wounded by a blessed weapon",
+"Fades from reality when trapped between two mirrors",
+"Turns to mist when kissed by someone without fear",
+"Unravels when confronted with physical proof of its own death",
+"Turns feral and self-destructive under a full moon",
+"Burns to nothing when exposed to true sunlight, not reflected light",
+"Shatters if its heartbeat is ever silenced for more than ten seconds",
+"Becomes visible and vulnerable when it hears its real name spoken by a child",
+"Dies permanently if pierced through the heart with a holy blade",
+
+"Cannot move while being directly observed",
+
+"Only mortal when it feels fear — a state it avoids at all costs","Sunlight causes its flesh to burn and petrify into ash","Silver weapons nullify its regeneration and cause grievous wounds","Cannot cross running water or enter without invitation","Must feed nightly on fear or turns to dust by dawn","Bound to its summoning location, cannot stray far from birthplace","True name spoken aloud shatters its physical form","Fire purifies its corruption, the only thing it truly fears","Vulnerable only when seen in mirrors or reflective surfaces","Holy ground repels it, causing intense agony upon approach","Heart located outside body in hidden relic - destroy to kill permanently"],
+            personality: [
+                "Patient hunter that enjoys the fear more than the kill itself",
+                "Mocking trickster that imitates the voices of lost loved ones",
+                "Obsessed with perfection, reshaping victims into twisted art",
+                "Cold and calculating, views all life as pieces on a chessboard",
+                "Childlike demeanor hiding unspeakable cruelty",
+                "Ritualistic killer performing every act with ceremonial precision",
+                "Jealous of the living and seeks to replace them one by one",
+                "Protective of its territory, reacts violently to intrusion",
+                "Sad philosopher that questions its own existence after each kill",
+                "Collector of secrets, trades information for lives",
+                "Reclusive wanderer drawn to places of tragedy and despair",
+                "Fanatical zealot believing its murders serve a higher power",
+                "Narcissistic being that demands worship and fear from all who see it",
+                "Tormented soul reliving its own death through its victims",
+                "Playful deceiver that delights in confusing reality and illusion",
+                "Remorseless predator that views suffering as art",
+                "Guarded and territorial, only attacks when provoked or challenged",
+                "Obsessive archivist that records every scream and whisper",
+                "Quiet mourner who kills only to silence its own pain",
+                "Eloquent storyteller that charms before consuming its audience",
+                "Sadistic and playful, toys with victims before the final strike",
+                "Silent stalker that observes prey for days, learning their patterns",
+                "Vengeful spirit obsessed with punishing the guilty and sinners",
+                "Melancholic entity that regrets every kill but cannot stop its nature",
+                "Cunning manipulator that turns allies against each other",
+                "Chaotic destroyer driven by pure rage and hatred for the living",
+                "Curious observer of humanity, studies victims like specimens",
+                "Speaks only in riddles and backward prophecies",
+                "Collects trophies and memories from each victim obsessively",
+                "Believes it is still human, confused by its monstrous urges",
+                "Honorable killer that follows a twisted code of conduct",
+                "Cowardly predator that only attacks the weak and vulnerable",
+                "Arrogant entity convinced of its own superiority",
+                "Humble monster that apologizes before each kill",
+                "Paranoid being that sees threats everywhere",
+                "Trusting creature easily manipulated despite its power",
+                "Generous spirit that offers victims choices before death",
+                "Greedy collector hoarding souls and treasures",
+                "Envious of human emotions it cannot feel",
+                "Wrathful demon in perpetual state of fury",
+                "Lustful predator drawn to beauty and desire",
+                "Gluttonous entity that can never be satisfied",
+                "Slothful horror that moves only when absolutely necessary",
+                "Prideful being unable to accept any imperfection",
+                "Penitent monster seeking forgiveness through killing",
+                "Joyful murderer that laughs during every kill",
+                "Sorrowful killer weeping throughout each act",
+                "Emotionless automaton following programmed directives",
+                "Empathetic tormentor that feels victim's pain and enjoys it",
+                "Schizophrenic entity with multiple conflicting personalities",
+                "Obsessive-compulsive, must perform rituals exactly right",
+                "Bipolar shifting between manic energy and deep depression",
+                "Sociopathic lacking any capacity for empathy",
+                "Borderline personality with intense unstable relationships",
+                "Narcissistic requiring constant validation through fear",
+                "Histrionic seeking attention through dramatic kills",
+                "Avoidant hiding from confrontation despite power",
+                "Dependent requiring master or purpose to function",
+                "Paranoid distrusting all including itself",
+                "Schizoid preferring isolation from all beings",
+                "Antisocial violating all norms and rules with glee",
+                "Methodical planner spending years preparing single kill",
+                "Impulsive actor striking without thought or plan",
+                "Logical thinker solving problems through murder",
+                "Emotional wreck driven by uncontrollable feelings",
+                "Artistic creator viewing death as ultimate canvas",
+                "Scientific experimenter testing limits of suffering",
+                "Philosophical ponderer discussing existence with victims",
+                "Religious fanatic serving dark gods faithfully",
+                "Atheistic believer in meaninglessness of all life",
+                "Romantic seeking perfect love through possession",
+                
+                "Familial treating victims as beloved children",
+                "Professional maintaining business-like approach to murder",
+                "Amateur enthusiastic but clumsy in methods",
+                "Veteran experienced with thousands of kills",
+                "Novice recently awakened to its nature",
+                "Teacher instructing others in art of killing",
+                "Student learning and adapting constantly",
+                "Leader directing others in coordinated hunts",
+                "Follower obeying commands from unseen masters",
+                "Rebel fighting against its own nature",
+                "Conformist following established patterns exactly",
+                
+                "Traditionalist preserving ancient ways of killing",
+                "Progressive adapting to modern world",
+                "Conservative clinging to old methods",
+                "Optimist believing its actions serve good purpose",
+                
+                "Idealist pursuing perfect kill or victim",
+                "Pragmatist doing what works efficiently",
+                
+                "Insomniac never resting always hunting",
+                
+                "Communicative talking constantly to victims",
+                "Silent never making sound while killing",
+                "Poetic speaking in verse and metaphor",
+                
+                "Sarcastic mocking victims as they die"
+            ],
+            setting: [
+                "Ruined castle overtaken by creeping black vines",
+                "Burned-down church where ghostly hymns still echo",
+                "Collapsed cathedral buried beneath a modern city",
+                "Crimson forest where the trees bleed when cut",
+                "Forgotten mine shaft filled with bones and broken lanterns",
+                "Frozen wasteland haunted by the screams of the wind",
+                "Subterranean labyrinth carved from black stone and flesh",
+                "Desert ruins swallowed by endless sand and silence",
+                "Swamp of perpetual dusk where the water reflects faces of the dead",
+                "Abandoned research facility humming with strange power",
+                "Cursed village that reappears only under a blood moon",
+                "Endless hallway of mirrors that show alternate realities",
+                "Temple floating in the clouds, built for gods that no longer exist",
+                "Orbiting ruin of an ancient alien ark drifting through space",
+                "Cursed dream realm shared by the insane and the dead",
+                "Celestial library where books write themselves in living ink",
+                "Digital afterlife corrupted by the souls of extinct AIs",
+                "Endless stairwell descending through layers of forgotten time",
+                "Abandoned asylum with corridors that shift and change",
+                "Fog-shrouded graveyard where the dead whisper warnings",
+                "Ancient cathedral ruins beneath which darker things dwell",
+                "Cursed forest where trees bleed and shadows move independently",
+                "Derelict space station drifting through the cosmic void",
+                "Deep ocean trench where pressure and darkness reign eternal",
+                "Decaying carnival grounds frozen in perpetual midnight",
+                "Mirror realm accessible only through reflections at certain hours",
+                "Subterranean laboratory complex filled with failed experiments",
+                "Burned village that exists simultaneously in past and present",
+                "Abandoned shopping mall echoing with ghostly commerce",
+                "Underground catacombs stretching beneath an entire city",
+                "Decommissioned nuclear power plant leaking otherworldly energy",
+                "Overgrown botanical garden where plants have become predatory",
+                "Sunken city visible only during lowest tides",
+                "Psychiatric hospital where the patients never left",
+                "Collapsed subway system forming a maze beneath streets",
+                "Quarantined zone where biological experiments went wrong",
+                "Ancient battlefield where the dead still wage war",
+                "Lighthouse on an island that doesn't appear on maps",
+                "Opera house where performances never ended",
+                "Hotel where guests check in but never leave",
+                "Slaughterhouse that processed more than just animals",
+                "Prison where the guards became the imprisoned",
+                "Observatory that gazed too long into the abyss",
+                "Theater showing films that predict deaths",
+                "Museum where exhibits come alive at night",
+                "School where children's laughter echoes eternally",
+                "Orphanage where innocence was systematically destroyed"
+                
+],
+signature: [
+                "Leaves behind symbols carved into stone or flesh wherever it kills",
+                "Whispers the victim's name moments before appearing",
+                "Always accompanied by a faint childlike laughter echoing from nowhere",
+                "Its arrival dims all nearby lights, no matter the source",
+                "Victims' eyes turn black and weep ash before death",
+                "Carries a faint scent of burned roses and wet earth",
+                "Summons flocks of crows that scatter when it's near",
+                "Collects eyes and strings them together as trophies",
+                "Footsteps echo long after it's gone, out of sync with movement",
+                "Blood turns to dust wherever it walks",
+                "Always leaves behind a single feather soaked in black ichor",
+                "Writes cryptic messages in the victim's own handwriting",
+                "Freezes reflections in mirrors, leaving images that move independently",
+                "Victims vanish completely, leaving only shadows burnt into walls",
+                "Marks its prey with a sigil that burns under moonlight",
+                "Always sings softly before striking, the tune changing each kill",
+                "Leaves claw marks in perfect circular patterns around bodies",
+                "Victims are found smiling, as if welcoming death",
+                "Appears only in reflections before manifesting in reality",
+                "Feeds but leaves no wounds, only an expression of terror",
+                "Its shadow moves independently, sometimes attacking first",
+                "Survivors claim to hear their own voices calling them toward it",
+                "Leaves trails of frost or burning embers depending on mood",
+                "Leaves carved runes in the flesh of victims",
+                "Collects the eyes of those it kills, preserving them in jars",
+                "Replaces victims with wooden dolls in their exact likeness",
+                "Draws circles of ash around murder sites",
+                "Drains all color from the area, leaving only grayscale",
+                "Leaves behind black feathers that burn to the touch",
+                "Arranges bones into intricate geometric patterns",
+                "Writes prophecies in blood on nearby walls",
+                "Steals one specific item from each victim like lockets or photographs",
+                "Victims found with expressions of pure terror frozen on faces",
+                "Leaves a single playing card at each scene",
+                "Plants flowers that grow from victim's wounds",
+                "Victims' final screams echo eternally at the location",
+                "Leaves behind hourglasses with sand running backward",
+                "Carves dates into nearby surfaces predicting future deaths",
+                "Victims age rapidly before death, becoming ancient",
+                "Leaves coins over victims' eyes from currencies that don't exist",
+                "Bodies positioned to point toward its next target",
+                "Leaves cryptic poetry written in strange languages",
+                "Victims' hair turns pure white instantly",
+                "Leaves behind children's toys at murder scenes",
+                "Marks locations with specific flowers that bloom out of season",
+                "Victims found clutching photos of themselves already dead",
+                "Leaves behind perfect ice sculptures of its victims",
+                "Writes victim's name backwards in their own blood",
+                "Leaves behind music boxes that play haunting melodies",
+                "Victims found with mouths sewn shut with golden thread",
+                "Marks kill sites with specific constellations in blood",
+                "Leaves behind dolls with one eye matching each victim",
+                "Victims found holding letters they wrote predicting their death",
+                "Leaves behind mirrors cracked in specific patterns",
+                "Victims discovered with strange surgical modifications",
+                "Marks sites with candles that burn with black flames",
+                "Leaves behind photographs showing victim's final moments",
+                "Bodies found with pockets full of ash and bone fragments",
+                "Victims wear masks they don't remember putting on",
+                "Leaves behind clocks stopped at exact time of death",
+                "Marks territory with specific animal skulls",
+                "Victims found with their hearts replaced by stones",
+                "Leaves behind origami figures folded from human skin",
+                "Marks sites with specific chemical compounds",
+                "Victims found holding keys to locks that don't exist",
+                "Leaves behind portraits that age while subject remains young",
+                "Victims discovered with their names tattooed backwards",
+                "Marks locations with specific mathematical equations",
+                "Leaves behind glass spheres containing swirling mist",
+                "Victims found with mouths full of specific flowers",
+                "Marks sites with footprints that lead nowhere",
+                "Leaves behind recordings of conversations that never happened",
+                "Victims discovered with maps to their own location",
+                "Marks territory with specific musical notes played backwards",
+                "Leaves behind books with victim's biography already written",
+                "Victims found wearing masks of their own faces",
+                "Marks sites with specific gemstones left in patterns",
+                "Leaves behind hourglass tattoos that count down on victim's skin",
+                "Victims discovered with their shadows permanently detached",
+                "Marks locations with specific herbs from extinct plants",
+                "Leaves behind compasses pointing toward future victims",
+                "Victims found holding letters written in their own future handwriting",
+                "Marks sites with specific star charts from impossible dates",
+                "Leaves behind vials containing victim's final breath",
+                "Victims discovered with prophecies written on their bones",
+                "Marks territory with specific scents only certain people can detect",
+                "Leaves behind paintings showing victim's death before it occurs",
+                "Victims found with specific insects emerging from wounds",
+                "Marks sites with echoes that repeat victim's final words",
+                
+                "Victims discovered with their reflections reversed",
+                "Marks locations with temperature anomalies that spell words",
+                "Leaves behind ash that falls upward at kill sites",
+                
+                
+                "Leaves behind victims who age backward until they vanish",
+                "Victims discovered with their DNA rewritten into messages",
+                "Marks sites where gravity behaves strangely",
+                "Leaves behind evidence that victim never existed",
+                "Victims found in locations they couldn't have reached",
+                "Marks territory with specific wavelengths of light",
+                "Leaves behind teeth arranged in perfect spirals",
+                "Victims found with their last words carved into their skin",
+                "Marks sites with blood that remains liquid indefinitely",
+                
+                "Victims discovered wrapped in spider silk",
+                
+                "Leaves behind rosary beads made from vertebrae",
+                
+                "Marks territory with handprints that appear in impossible places",
+                "Leaves behind polaroids showing moments before death",
+                "Victims discovered with their fingerprints completely removed",
+                "Marks sites with specific chemical reactions that spell names"
+            ]}
+       const namePrefixes = [
+            "Mor", "Zar", "Kael", "Vex", "Dra", "Nym", "Vor", "Ash", "Xer", "Vel", 
+            "Gor", "Thal", "Nyx", "Vyr", "Ray", "Glam", "Xal", "Mal", "Gri", "Skar",
+            "Tor", "Nex", "Bale", "Zeph", "Kro", "Vos", "Rax", "Thul", "Mor", "Azra",
+            "Bran", "Cael", "Drak", "Eldr", "Fang", "Ghor", "Hel", "Ix", "Jor", "Kry",
+            "Laz", "Mord", "Nar", "Orn", "Phel", "Qua", "Raz", "Syl", "Tyr", "Ul",
+            "Val", "Wrath", "Xan", "Yor", "Zul", "Ath", "Blight", "Crim", "Dreth", "Eth",
+            "Fel", "Grav", "Hex", "Infern", "Kal", "Leth", "Mael", "Neth", "Obsi", "Phan",
+            "Quel", "Rav", "Shad", "Tar", "Urth", "Vorn", "Wraith", "Xor", "Yth", "Zor"
+        ];
+        
+        const nameSuffixes = [
+            "oth", "ath", "eth", "rath", "vorn", "thir", "gorn", "kar", "dros", "ion", 
+            "ax", "ul", "or", "is", "en", "ar", "os", "us", "ix", "ex",
+            "rik", "mon", "dar", "thor", "grim", "bane", "rok", "mar", "dor", "ven",
+            "ash", "ius", "ael", "orn", "yr", "al", "on", "ak", "ur", "ir",
+            "ok", "uk", "ek", "ik", "an", "in", "un", "yn", "as", "es",
+            "og", "ag", "ig", "ug", "om", "am", "im", "um", "el", "ol",
+            "ab", "ib", "ob", "ub", "ad", "id", "od", "ud", "af", "if",
+            "og", "akor", "imus", "arak", "enos", "uul", "azor", "ithis", "oron", "azar"
+        ];
+        
+        const titles = [
+            "The Warden of Echoes", "The Shattered Choir", "Queen of Rust", "The Hollowed Prophet",
+            "Bringer of Silence", "The Eternal Mourner", "Devourer of Light", "The Crimson Shepherd",
+            "Keeper of Forgotten Names", "The Thirsting Shadow", "The Pale Witness", "Harbinger of Ash",
+            "The Bleeding Crown", "Soul Render", "The Void Walker", "Nightmare's Edge",
+            "The Bone Collector", "Whisper of Madness", "The Forsaken King", "Dread Empress",
+            "The Carrion Lord", "Herald of Ruin", "The Dark Watcher", "Banshee Queen",
+            "The Cursed One", "Master of Torment", "The Fallen Star", "Prince of Shadows",
+            "The Blighted", "Chaos Incarnate", "The Nameless Horror", "Death's Herald",
+            "The Undying", "Plague Bringer", "The Wretched", "Lord of Despair",
+            "The Vengeful", "Midnight's Terror", "The Accursed", "Spawn of Darkness",
+            "The Corrupted", "Fear Itself", "The Desecrator", "Bane of Light",
+            "The Twisted", "Essence of Dread", "The Malformed", "Avatar of Suffering",
+            "The Withered", "Echo of Screams", "The Shunned", "Architect of Nightmares",
+            "The Exiled", "Scourge of Hope", "The Damned One", "Wraith King",
+            "The Lost Soul", "Tyrant of Blood", "The Doomed", "Monarch of Madness",
+            "The Broken", "Sovereign of Sorrow", "The Tormented", "Emperor of Emptiness"
+        ];
+
+        // Extended creature-specific name parts for even MORE variety
+        const vampireNames = ["Vlad", "Carmilla", "Nos", "Striga", "Sanguis", "Noctis"];
+        const demonNames = ["Baal", "Beleth", "Azaz", "Abaddon", "Moloch", "Lilith"];
+        const ghostNames = ["Spectra", "Phantom", "Wraith", "Shade", "Wisp", "Echo"];
+        const werewolfNames = ["Fenris", "Luna", "Fang", "Howl", "Savage", "Beast"];
+        const undeadNames = ["Mort", "Lich", "Grave", "Tomb", "Rot", "Crypt"];
+
+        let currentTraits = {category:null,physical:null,origin:null,powers:null,weakness:null,personality:null,setting:null,signature:null};
+        let currentName = "";
+        let currentImage = "";
+        let currentBio = "";
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const size = Math.random() * 80 + 40;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        function showCreator() {
+            document.getElementById('landing').style.display = 'none';
+            document.getElementById('creator').classList.add('active');
+        }
+
+        function rollTrait(trait) {
+            const valueElement = document.getElementById(`${trait}-value`);
+            const button = event.target;
+            
+            // Add rolling animation
+            valueElement.classList.add('rolling');
+            button.classList.add('rolling');
+            
+            // Simulate slot machine effect with multiple rapid changes
+            let rollCount = 0;
+            const rollInterval = setInterval(() => {
+                const data = creatureData[trait];
+                const tempRandom = data[Math.floor(Math.random() * data.length)];
+                valueElement.textContent = tempRandom;
+                rollCount++;
+                
+                if (rollCount >= 8) {
+                    clearInterval(rollInterval);
+                    
+                    // Final value
+                    const finalValue = data[Math.floor(Math.random() * data.length)];
+                    currentTraits[trait] = finalValue;
+                    valueElement.textContent = finalValue;
+                    
+                    // Remove rolling, add rolled state
+                    setTimeout(() => {
+                        valueElement.classList.remove('rolling');
+                        valueElement.classList.add('rolled');
+                        button.classList.remove('rolling');
+                    }, 100);
+                }
+            }, 80);
+        }
+
+        function rollAll() {
+            const traits = Object.keys(creatureData);
+            let delay = 0;
+            
+            traits.forEach((trait, index) => {
+                setTimeout(() => {
+                    const valueElement = document.getElementById(`${trait}-value`);
+                    const button = valueElement.nextElementSibling;
+                    
+                    // Add rolling animation
+                    valueElement.classList.add('rolling');
+                    if (button) button.classList.add('rolling');
+                    
+                    // Simulate slot machine
+                    let rollCount = 0;
+                    const rollInterval = setInterval(() => {
+                        const data = creatureData[trait];
+                        const tempRandom = data[Math.floor(Math.random() * data.length)];
+                        valueElement.textContent = tempRandom;
+                        rollCount++;
+                        
+                        if (rollCount >= 8) {
+                            clearInterval(rollInterval);
+                            
+                            const finalValue = data[Math.floor(Math.random() * data.length)];
+                            currentTraits[trait] = finalValue;
+                            valueElement.textContent = finalValue;
+                            
+                            setTimeout(() => {
+                                valueElement.classList.remove('rolling');
+                                valueElement.classList.add('rolled');
+                                if (button) button.classList.remove('rolling');
+                            }, 100);
+                        }
+                    }, 80);
+                }, delay);
+                
+                delay += 150; // Stagger each roll
+            });
+        }
+
+        function generateName() {
+            const useTitle = Math.random() < 0.3; // 30% chance for title
+            
+            if (useTitle) {
+                currentName = titles[Math.floor(Math.random() * titles.length)];
+            } else {
+                // Check creature category for themed names
+                const category = currentTraits.category ? currentTraits.category.toLowerCase() : '';
+                let specialPrefix = null;
+                
+                // 40% chance to use category-specific name part
+                if (Math.random() < 0.4) {
+                    if (category.includes('vampire')) {
+                        specialPrefix = vampireNames[Math.floor(Math.random() * vampireNames.length)];
+                    } else if (category.includes('demon') || category.includes('hellspawn')) {
+                        specialPrefix = demonNames[Math.floor(Math.random() * demonNames.length)];
+                    } else if (category.includes('ghost') || category.includes('spirit') || category.includes('phantom')) {
+                        specialPrefix = ghostNames[Math.floor(Math.random() * ghostNames.length)];
+                    } else if (category.includes('were') || category.includes('shapeshifter')) {
+                        specialPrefix = werewolfNames[Math.floor(Math.random() * werewolfNames.length)];
+                    } else if (category.includes('undead') || category.includes('lich') || category.includes('zombie')) {
+                        specialPrefix = undeadNames[Math.floor(Math.random() * undeadNames.length)];
+                    }
+                }
+                
+                // Build the name
+                const prefix = specialPrefix || namePrefixes[Math.floor(Math.random() * namePrefixes.length)];
+                const suffix = nameSuffixes[Math.floor(Math.random() * nameSuffixes.length)];
+                
+                // 20% chance for double-barreled name (like "Mor-Thalix")
+                if (Math.random() < 0.2) {
+                    const prefix2 = namePrefixes[Math.floor(Math.random() * namePrefixes.length)];
+                    currentName = prefix + '-' + prefix2 + suffix;
+                } else {
+                    currentName = prefix + suffix;
+                }
+            }
+            
+            document.getElementById('creature-name-input').value = currentName;
+        }
+
+        document.getElementById('creature-name-input').addEventListener('input', function(e) {
+            currentName = e.target.value || "Unnamed Horror";
+        });
+
+        async function generateEnhancedBiography() {
+            currentBio = generateEnhancedFallbackBio();
+            console.log('✅ Biography generated');
+        }
+
+        function generateEnhancedFallbackBio() {
+            const pronouns = ['it', 'he', 'she'];
+            const pronoun = pronouns[Math.floor(Math.random() * pronouns.length)];
+            const pronounCap = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+            const possessive = pronoun === 'it' ? 'its' : pronoun === 'they' ? 'their' : pronoun === 'he' ? 'his' : 'her';
+            const objective = pronoun === 'it' ? 'it' : pronoun === 'they' ? 'them' : pronoun === 'he' ? 'him' : 'her';
+            
+            const category = currentTraits.category.toLowerCase();
+            const setting = currentTraits.setting.toLowerCase();
+            
+            const templates = {
+                vampire: [
+                    `Once ${currentName} walked among mortals as one of them, until the night ${pronoun} was seduced by ancient bloodlust. Now ${pronoun} rules over the ${setting}, commanding lesser beings with ${possessive} hypnotic gaze. By moonlight, ${pronoun} hunts the living, draining their essence to sustain ${possessive} cursed immortality. Those who survive an encounter speak of ${possessive} mesmerizing beauty hiding an insatiable hunger.`,
+                    `${currentName} has stalked the night for centuries, a master of shadow and deception. ${pronounCap} dwells within the ${setting}, emerging only when the moon rises to claim new victims. The elders say ${pronoun} was cursed by forbidden love, doomed to feed on the very thing ${pronoun} once cherished. To this day, ${possessive} victims are found drained and pale, bearing the mark of ${possessive} kiss.`
+                ],
+                demon: [
+                    `Summoned from the depths of the inferno, ${currentName} broke free from ${possessive} bindings and claimed the ${setting} as ${possessive} domain. ${pronounCap} feeds on the corruption of mortal souls, twisting them into servants of darkness. The air itself burns where ${pronoun} walks, and reality fractures under the weight of ${possessive} presence. Those foolish enough to call upon ${objective} learn too late that demons answer to no master.`,
+                    `${currentName} is a being of pure malevolence, birthed from humanity's darkest nightmares. ${pronounCap} manifests within the ${setting}, drawn by acts of cruelty and despair. Legends tell of how ${pronoun} offers power to the desperate, only to claim their souls when the price comes due. Even now, ${possessive} name is whispered by cultists seeking to harness ${possessive} terrible might.`
+                ],
+                ghost: [
+                    `${currentName} was murdered in the ${setting}, and ${possessive} spirit never found peace. ${pronounCap} haunts the location of ${possessive} death, reliving that terrible moment for all eternity. Those who trespass feel ${possessive} icy touch and hear ${possessive} mournful wails echoing through the darkness. The living say ${pronoun} seeks vengeance, unable to rest until ${possessive} killer faces justice.`,
+                    `Death came violently for ${currentName}, but it was not the end. ${pronounCap} lingers in the ${setting} as a restless specter, bound by unfinished business. Witnesses describe seeing ${possessive} translucent form drifting through walls, forever searching for something lost. The locals know to avoid the places where ${pronoun} appears, for ${possessive} touch brings a cold that freezes the soul itself.`
+                ],
+                werewolf: [
+                    `${currentName} was once human, until the curse of lycanthropy transformed ${objective} into a savage predator. When the full moon rises over the ${setting}, ${pronoun} undergoes a horrific transformation, bones breaking and reshaping into a monstrous form. In this bestial state, ${pronoun} hunts with primal fury, tearing through anything that crosses ${possessive} path. By dawn, ${pronoun} returns to human form, haunted by fragmented memories of the carnage.`,
+                    `The beast known as ${currentName} prowls the ${setting}, caught between two worlds. ${pronounCap} was bitten by another of ${possessive} cursed kind, forever damned to shift between man and monster. During the full moon, ${possessive} humanity vanishes, replaced by an insatiable bloodlust. Those who hear ${possessive} howl know to bar their doors and pray ${pronoun} finds prey elsewhere.`
+                ],
+                undead: [
+                    `${currentName} refused to accept death and clawed ${possessive} way back from the grave. Now ${pronoun} exists in the ${setting} as a mockery of life, flesh rotting yet still moving. ${pronounCap} hungers for the warmth of the living, driven by an emptiness that can never be filled. The stench of decay announces ${possessive} arrival, and those who fall before ${objective} rise again as mindless servants.`,
+                    `In the ${setting}, death is merely a doorway for ${currentName}. ${pronounCap} was resurrected through dark necromancy, bound to serve but twisted by the process. Though ${possessive} body decays with each passing year, ${possessive} will remains unbreakable. ${pronounCap} commands legions of the dead, spreading ${possessive} curse to any who dare stand against ${objective}.`
+                ],
+                default: [
+                    `${currentName} emerged from the ${setting} as something the world had never seen before. ${pronounCap} defies natural law, existing as an impossibility made flesh. Those who study ${objective} speak of paradoxes and contradictions, as if ${pronoun} should not be able to exist. Yet ${pronoun} does exist, and ${possessive} very presence warps reality around ${objective}.`,
+                    `No one knows the true origin of ${currentName}, only that ${pronoun} appeared in the ${setting} without warning. ${pronounCap} moves with purpose, as if following some incomprehensible design. Survivors describe ${objective} as something between nightmare and reality, a creature that shouldn't be possible. And yet ${pronoun} hunts, eternally patient, eternally hungry.`
+                ]
+            };
+            
+            let selectedTemplate;
+            if (category.includes('vampire')) selectedTemplate = templates.vampire;
+            else if (category.includes('demon') || category.includes('hellspawn')) selectedTemplate = templates.demon;
+            else if (category.includes('ghost') || category.includes('spirit') || category.includes('phantom') || category.includes('spectral')) selectedTemplate = templates.ghost;
+            else if (category.includes('were') || category.includes('shapeshifter')) selectedTemplate = templates.werewolf;
+            else if (category.includes('undead') || category.includes('lich') || category.includes('zombie')) selectedTemplate = templates.undead;
+            else selectedTemplate = templates.default;
+            
+            return selectedTemplate[Math.floor(Math.random() * selectedTemplate.length)];
+        }
+
+
+        function generateEnhancedImagePrompt() {
+            const compositions = [
+                'full body shot showing entire creature from head to toe',
+                'dramatic full figure portrait with complete form visible',
+                'wide angle full body view capturing entire being',
+                'complete creature portrait showing full anatomy',
+                'cinematic full body composition with all features visible'
+            ];
+            
+            const lightingStyles = [
+                'dramatic rim lighting with deep shadows',
+                'ethereal moonlight casting long shadows',
+                'ominous backlit silhouette with glowing edges',
+                'volumetric fog with rays of dim light',
+                'supernatural bioluminescent glow'
+            ];
+            
+            const artStyles = [
+                'ultra-detailed dark fantasy concept art',
+                'photorealistic horror masterpiece',
+                'cinematic creature design',
+                'hyperrealistic monster portrait',
+                'professional dark fantasy illustration'
+            ];
+            
+            const composition = compositions[Math.floor(Math.random() * compositions.length)];
+            const lighting = lightingStyles[Math.floor(Math.random() * lightingStyles.length)];
+            const artStyle = artStyles[Math.floor(Math.random() * artStyles.length)];
+            
+            return `${artStyle}, ${composition} of a terrifying ${currentTraits.category.toLowerCase()}. Physical features: ${currentTraits.physical}. Environment: ${currentTraits.setting}. ${lighting}. Dark atmospheric background, 8K resolution, highly detailed textures, cinematic quality, masterpiece, professional horror art, complete creature visible, nothing cut off, full frame composition`;
+        }
+
+        async function generateImageHuggingFace(prompt) {
+            // Randomly select a model for variety and quality
+            const selectedModel = IMAGE_MODELS[Math.floor(Math.random() * IMAGE_MODELS.length)];
+            console.log(`🎨 Generating image with ${selectedModel}...`);
+            
+            async function generateImageHuggingFace(prompt) {
+            // Randomly select a model for variety and quality
+            const selectedModel = IMAGE_MODELS[Math.floor(Math.random() * IMAGE_MODELS.length)];
+            console.log(`🎨 Generating image with ${selectedModel}...`);
+            
+            try {
+                const response = await fetch(`https://api-inference.huggingface.co/models/${selectedModel}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${HF_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        inputs: prompt,
+                        parameters: {
+                            negative_prompt: 'cropped, cut off, partial view, missing head, missing body parts, cartoon, anime, cute, cheerful, bright colors, low quality, blurry, distorted, deformed, incomplete',
+                            num_inference_steps: 25,
+                            guidance_scale: 7.5
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    console.warn(`Model ${selectedModel} failed with status ${response.status}, trying backup...`);
+                    throw new Error(`HF API error: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                
+                // Check if blob is actually an image
+                if (blob.size < 1000 || !blob.type.startsWith('image/')) {
+                    console.warn('Invalid image received, trying backup...');
+                    throw new Error('Invalid image blob');
+                }
+                
+                const imageUrl = URL.createObjectURL(blob);
+                console.log('✅ Image generated successfully');
+                return imageUrl;
+            } catch (error) {
+                console.error('❌ HF failed:', error);
+                throw error;
+            }
+        }
+
+        function generateImagePollinations(prompt) {
+            console.log('🎨 Using Pollinations backup...');
+            const enhanced = `${prompt}, complete full body shot, nothing cropped, entire creature visible, professional horror art, 8k quality`;
+            const negative = 'cropped, cut off, partial, incomplete, missing head, cartoon, anime, cute, bright, colorful, low quality, blurry';
+            const encoded = encodeURIComponent(enhanced);
+            const encodedNeg = encodeURIComponent(negative);
+            const seed = Math.floor(Math.random() * 1000000);
+            return `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&seed=${seed}&nologo=true&negative=${encodedNeg}`;
+        }
+
+        async function createCreature() {
+            if (!document.getElementById('creature-name-input').value) generateName();
+            currentName = document.getElementById('creature-name-input').value || currentName;
+            
+            const unrolled = Object.values(currentTraits).filter(v => v === null);
+            if (unrolled.length > 0) {
+                // Shake animation on unrolled traits
+                Object.keys(currentTraits).forEach(trait => {
+                    if (currentTraits[trait] === null) {
+                        const section = document.getElementById(`${trait}-value`).closest('.trait-section');
+                        section.classList.add('shake');
+                        setTimeout(() => section.classList.remove('shake'), 400);
+                    }
+                });
+                alert('Please roll all traits before creating your creature!');
+                return;
+            }
+
+            // Add pulsing animation to create button
+            const createBtn = document.querySelector('.create-btn');
+            createBtn.classList.add('creating');
+
+            const imageContainer = document.getElementById('image-container');
+            imageContainer.innerHTML = '<div class="loading-animation"></div>';
+            
+            await generateEnhancedBiography();
+            
+            const prompt = generateEnhancedImagePrompt();
+            console.log('🔮 Image prompt:', prompt);
+
+            try {
+                currentImage = await generateImageHuggingFace(prompt);
+                const img = document.createElement('img');
+                img.src = currentImage;
+                img.alt = currentName;
+                img.onload = () => {
+                    imageContainer.innerHTML = '';
+                    createBtn.classList.remove('creating');
+                    imageContainer.appendChild(img);
+                    if (document.getElementById('result').classList.contains('active')) {
+                        document.getElementById('result-image').src = currentImage;
+                    }
+                };
+                img.onerror = () => {
+                    imageContainer.innerHTML = '<span class="placeholder-text">Image failed to load</span>';
+                };
+            } catch (error) {
+                console.warn('⚠️ Using Pollinations backup');
+                currentImage = generateImagePollinations(prompt);
+                const img = document.createElement('img');
+                img.src = currentImage;
+                img.alt = currentName;
+                img.onload = () => {
+                    imageContainer.innerHTML = '';
+                    createBtn.classList.remove('creating');
+                    imageContainer.appendChild(img);
+                    if (document.getElementById('result').classList.contains('active')) {
+                        document.getElementById('result-image').src = currentImage;
+                    }
+                };
+                img.onerror = () => {
+                    imageContainer.innerHTML = '<span class="placeholder-text">Failed. Try again.</span>';
+                    createBtn.classList.remove('creating');
+                };
+            }
+
+            document.getElementById('regenerate-btn').style.display = 'block';
+            document.getElementById('download-btn').style.display = 'block';
+            
+            showResult();
+        }
+
+        async function regenerateImage() {
+            const imageContainer = document.getElementById('image-container');
+            const resultContainer = document.getElementById('result-image-container');
+            
+            if (document.getElementById('result').classList.contains('active')) {
+                resultContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;"><div class="loading-animation"></div></div>';
+            } else {
+                imageContainer.innerHTML = '<div class="loading-animation"></div>';
+            }
+            
+            const prompt = generateEnhancedImagePrompt();
+            console.log('🔄 Regenerating...');
+
+            try {
+                currentImage = await generateImageHuggingFace(prompt);
+                if (document.getElementById('result').classList.contains('active')) {
+                    resultContainer.innerHTML = `<img src="${currentImage}" alt="${currentName}" id="result-image">`;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = currentImage;
+                    img.alt = currentName;
+                    imageContainer.innerHTML = '';
+                    imageContainer.appendChild(img);
+                }
+            } catch (error) {
+                console.warn('⚠️ Using Pollinations');
+                currentImage = generateImagePollinations(prompt);
+                if (document.getElementById('result').classList.contains('active')) {
+                    resultContainer.innerHTML = `<img src="${currentImage}" alt="${currentName}" id="result-image">`;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = currentImage;
+                    img.alt = currentName;
+                    imageContainer.innerHTML = '';
+                    imageContainer.appendChild(img);
+                }
+            }
+        }
+
+        function showResult() {
+            document.getElementById('creator').classList.remove('active');
+            document.getElementById('result').classList.add('active');
+            document.getElementById('result-creature-name').textContent = currentName;
+            document.getElementById('result-image').src = currentImage;
+            document.getElementById('biography-text').textContent = currentBio;
+            
+            const attrs = document.getElementById('attributes-container');
+            attrs.innerHTML = `
+                <div class="attribute"><h4>Category</h4><p>${currentTraits.category}</p></div>
+                <div class="attribute"><h4>Physical Features</h4><p>${currentTraits.physical}</p></div>
+                <div class="attribute"><h4>Origin</h4><p>${currentTraits.origin}</p></div>
+                <div class="attribute"><h4>Powers & Abilities</h4><p>${currentTraits.powers}</p></div>
+                <div class="attribute"><h4>Weaknesses</h4><p>${currentTraits.weakness}</p></div>
+                <div class="attribute"><h4>Personality</h4><p>${currentTraits.personality}</p></div>
+                <div class="attribute"><h4>Setting / Domain</h4><p>${currentTraits.setting}</p></div>
+                <div class="attribute"><h4>Signature</h4><p>${currentTraits.signature}</p></div>
+            `;
+        }
+
+        function backToCreator() {
+            document.getElementById('result').classList.remove('active');
+            document.getElementById('creator').classList.add('active');
+            Object.keys(currentTraits).forEach(key => currentTraits[key] = null);
+            document.querySelectorAll('.trait-value').forEach(el => {
+                el.textContent = 'Click roll to begin...';
+                el.classList.remove('rolled', 'rolling');
+            });
+            document.getElementById('creature-name-input').value = '';
+            document.getElementById('image-container').innerHTML = '<span class="placeholder-text">Your creature awaits...</span>';
+            document.getElementById('regenerate-btn').style.display = 'none';
+            document.getElementById('download-btn').style.display = 'none';
+        }
+
+        async function downloadCard() {
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            }
+
+            async function convertToBase64(url) {
+                try {
+                    const resp = await fetch(url);
+                    const blob = await resp.blob();
+                    return await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (e) {
+                    console.warn('Image embed failed:', e);
+                    return null;
+                }
+            }
+
+            console.log('📥 Preparing download...');
+            const imgData = await convertToBase64(currentImage);
+            const imgTag = imgData ? `<img src="${imgData}" alt="${escapeHtml(currentName)}">` : '<div style="padding:40px;text-align:center;color:#888">Image unavailable</div>';
+
+            const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(currentName)} - Dark Genesis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Cormorant Garamond', serif; background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0f 50%, #0f0a1a 100%); color: #e0e0e0; padding: 20px; min-height: 100vh; }
+.card { max-width: 900px; margin: 0 auto; background: rgba(20, 10, 15, 0.95); border: 2px solid rgba(139, 0, 0, 0.4); border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8); }
+h1 { font-family: 'Cinzel', serif; font-size: 2.5rem; color: #8b0000; text-align: center; margin-bottom: 30px; text-shadow: 0 0 20px rgba(139, 0, 0, 0.8); }
+.img-container { width: 100%; max-width: 600px; margin: 0 auto 30px; border-radius: 15px; overflow: hidden; border: 2px solid rgba(139, 0, 0, 0.3); background: #000; }
+.img-container img { width: 100%; height: auto; display: block; }
+.bio-section { background: rgba(0, 0, 0, 0.6); padding: 20px; border-radius: 10px; border-left: 3px solid #8b0000; margin-bottom: 30px; }
+.bio-section h2 { font-family: 'Cinzel', serif; color: #8b0000; margin-bottom: 15px; font-size: 1.5rem; }
+.bio-section p { line-height: 1.8; font-size: 1.1rem; color: #ccc; }
+.attrs { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+.attr { background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 10px; border: 1px solid rgba(139, 0, 0, 0.3); }
+.attr h3 { font-family: 'Cinzel', serif; color: #8b0000; margin-bottom: 10px; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1rem; }
+.attr p { color: #aaa; font-size: 1rem; line-height: 1.5; }
+.footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(139, 0, 0, 0.2); color: #666; font-size: 0.9rem; }
+@media (max-width: 768px) {
+  .card { padding: 20px; }
+  h1 { font-size: 2rem; }
+  .attrs { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>${escapeHtml(currentName)}</h1>
+  <div class="img-container">${imgTag}</div>
+  <div class="bio-section">
+    <h2>Biography</h2>
+    <p>${escapeHtml(currentBio)}</p>
+  </div>
+  <div class="attrs">
+    <div class="attr"><h3>Category</h3><p>${escapeHtml(currentTraits.category)}</p></div>
+    <div class="attr"><h3>Physical Features</h3><p>${escapeHtml(currentTraits.physical)}</p></div>
+    <div class="attr"><h3>Origin</h3><p>${escapeHtml(currentTraits.origin)}</p></div>
+    <div class="attr"><h3>Powers & Abilities</h3><p>${escapeHtml(currentTraits.powers)}</p></div>
+    <div class="attr"><h3>Weaknesses</h3><p>${escapeHtml(currentTraits.weakness)}</p></div>
+    <div class="attr"><h3>Personality</h3><p>${escapeHtml(currentTraits.personality)}</p></div>
+    <div class="attr"><h3>Setting / Domain</h3><p>${escapeHtml(currentTraits.setting)}</p></div>
+    <div class="attr"><h3>Signature</h3><p>${escapeHtml(currentTraits.signature)}</p></div>
+  </div>
+  <div class="footer">Forged in Dark Genesis • ${new Date().toLocaleDateString()}</div>
+</div>
+</body>
+</html>`;
+
+            const filename = `DarkGenesis_${currentName.replace(/[^a-z0-9]/gi, '_')}.html`;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
+            
+            console.log('✅ Card downloaded!');
+            alert(`Card saved: ${filename}\n\nThe image is embedded in the file!`);
+        }
+    </script>
+</body>
+</html>
