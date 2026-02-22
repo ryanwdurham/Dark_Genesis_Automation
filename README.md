@@ -12,6 +12,9 @@ Automates my Dark Genesis Creature Creator Application using Python, Selenium an
 - 🔄 **Comprehensive Testing** - Tests all major user workflows
 
   Click here to see the automation in action:  https://www.loom.com/share/3371576527fc4a159d7e9d721d930b74
+<br>
+<br>
+
 
   Click here to see the test report with failure:  https://ryanwdurham.github.io/Dark_Genesis_Automation/dark_genesis_test_report.html 
 
