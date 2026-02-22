@@ -19,7 +19,7 @@ Automates my Dark Genesis Creature Creator Application using Python, Selenium an
 
 
   Click here to see the test report with failure:  https://ryanwdurham.github.io/Dark_Genesis_Automation/dark_genesis_test_report.html 
-<br>
+<br> <br>
 ## 🔧 Requirements
 
 ### Software Requirements
