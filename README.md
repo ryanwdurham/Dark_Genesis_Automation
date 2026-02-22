@@ -10,14 +10,16 @@ Automates my Dark Genesis Creature Creator Application using Python, Selenium an
 - 🎬 **Demo Mode** - Runs at a pace perfect for demonstrations
 - 📝 **Detailed Logging** - Step-by-step console output with emojis
 - 🔄 **Comprehensive Testing** - Tests all major user workflows
-  <br>
+
+
+
   Click here to see the automation in action:  https://www.loom.com/share/3371576527fc4a159d7e9d721d930b74
 <br>
 
 
 
   Click here to see the test report with failure:  https://ryanwdurham.github.io/Dark_Genesis_Automation/dark_genesis_test_report.html 
-
+<br>
 ## 🔧 Requirements
 
 ### Software Requirements
